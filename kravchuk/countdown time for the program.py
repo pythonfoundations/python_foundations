@@ -1,6 +1,6 @@
 from time import sleep, clock
 
-n = 0
+n =  0
 def calculating (n):
     try:
         while True:
