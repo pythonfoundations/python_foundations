@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import requests, datetime
 import json
-from config import *
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from translate import Translator
 
 a = str(datetime.datetime.now())
 l = list(a)
@@ -25,28 +26,38 @@ result_currency = "На дату " + str(date) + " курс ПриватБанк
                   "EUR " + "курс покупки = " + str(purchase_eur) + " UAH; курс продажи = " + str(sale_eur) + " UAH;" \
         "" + "\n" + "USD " + "курс покупки = " + str(purchase_usd) + " UAH; курс продажи = " + str(sale_usd) + " UAH;" \
    "\n" + "RUB" + " курс покупки = " + str(purchase_rub) + " UAH; курс продажи = " + str(sale_rub) + " UAH;"
-token = TOKEN
+token = '779076598:AAFkrGDOrc6LNJkIat3aDxFXTkkAsLho620'
 
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 updater = Updater(token=token)
 dispatcher = updater.dispatcher
 
-
+def textTranslator(bot, update, args):
+    bot.send_message(chat_id=update.message.chat_id, text="я постараюсь помочь перевечти, с русского на английский "
+                                                          "что тебе нужно, вводи свой текст \n")
+    translator = Translator(from_lang="russian", to_lang="english")
+    translation = translator.translate(args[0])
+    bot.send_message(chat_id=update.message.chat_id, text=translation)
 
 def startCommand(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text='Hello I am @Kraken_hero_bot ')
 
 def textMessage(bot, update):
-    if "курс валют" in update.message.text:
+    if "курс валют" in update.message.text.lower():
         response = (result_currency)
         bot.send_message(chat_id=update.message.chat_id, text=response)
+    if "переводчик" in update.message.text.lower():
+        textTranslator(bot, update)
+
     else:
         response_2 = 'Get your message: ' + update.message.text
         bot.send_message(chat_id=update.message.chat_id, text=response_2)
 
 start_command_handler = CommandHandler('start', startCommand)
+translate_command_handler = CommandHandler('translate', textTranslator, pass_args=True)
 text_message_handler = MessageHandler(Filters.text, textMessage)
 dispatcher.add_handler(start_command_handler)
+dispatcher.add_handler(translate_command_handler)
 dispatcher.add_handler(text_message_handler)
 updater.start_polling(clean=True)
 updater.idle()
+
